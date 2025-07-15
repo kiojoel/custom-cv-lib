@@ -7,7 +7,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 
 
-from custom_cv.splitters import StratifiedKFoldCV, TimeSeriesCV
+from custom_cv.splitters import StratifiedKFoldCV, TimeSeriesCV, SpatialBlockCV
 
 print("Testing our Custom StratifiedKFoldCV")
 
@@ -81,3 +81,43 @@ for fold_num, (train_indices, test_indices) in enumerate(ts_cv.split(X_time)):
 print("\n--- Final Time-Series Results ---")
 print(f"Mean Squared Error for each fold: {[f'{s:.2f}' for s in fold_scores]}")
 print(f"Average MSE: {np.mean(fold_scores):.2f}")
+
+
+print("\n\n--- Testing our Custom SpatialBlockCV ---")
+
+# Dummy spatial data
+np.random.seed(42)
+n_samples = 200
+X_spatial = np.random.rand(n_samples, 5) # 5 random features
+
+coords1 = np.random.rand(n_samples // 2, 2) * 50  # Cluster in bottom-left
+coords2 = (np.random.rand(n_samples // 2, 2) * 50) + 50 # Cluster in top-right
+coords = np.vstack([coords1, coords2])
+
+# A simple target variable related to the coordinates
+y_spatial = coords[:, 0] + coords[:, 1] + np.random.randn(n_samples) * 5
+
+# Create an instance of our spatial cross-validator
+# Let's create a 4x4 grid, resulting in 16 potential folds.
+spatial_cv = SpatialBlockCV(n_blocks_per_dim=4)
+
+print(f"Splitting {n_samples} spatial samples into a {spatial_cv.n_blocks_per_dim}x{spatial_cv.n_blocks_per_dim} grid.")
+
+#  Use the splitter to see the indices
+fold_num = 0
+for train_indices, test_indices in spatial_cv.split(X=X_spatial, coords=coords):
+    fold_num += 1
+    # Get the coordinates for this fold's test set
+    test_coords = coords[test_indices]
+
+    # Get the bounding box of the test coordinates
+    min_x, min_y = test_coords.min(axis=0)
+    max_x, max_y = test_coords.max(axis=0)
+
+    print(f"\nFold {fold_num}:")
+    print(f"  Train samples: {len(train_indices)}, Test samples: {len(test_indices)}")
+    print(f"  Test points are all within a bounding box:")
+    print(f"    x range: [{min_x:.1f}, {max_x:.1f}]")
+    print(f"    y range: [{min_y:.1f}, {max_y:.1f}]")
+
+print(f"\nTotal folds created: {fold_num}")
