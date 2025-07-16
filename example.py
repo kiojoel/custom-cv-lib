@@ -5,9 +5,11 @@ from sklearn.metrics import accuracy_score
 
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
+from sklearn.ensemble import RandomForestClassifier
 
 
 from custom_cv.splitters import StratifiedKFoldCV, TimeSeriesCV, SpatialBlockCV
+from custom_cv.visualizations import plot_cv_scores
 
 print("Testing our Custom StratifiedKFoldCV")
 
@@ -121,3 +123,41 @@ for train_indices, test_indices in spatial_cv.split(X=X_spatial, coords=coords):
     print(f"    y range: [{min_y:.1f}, {max_y:.1f}]")
 
 print(f"\nTotal folds created: {fold_num}")
+
+
+print("--- Testing our Custom StratifiedKFoldCV with Visualization ---")
+
+# Create dummy data
+X, y = make_classification(
+    n_samples=500, n_features=20, n_informative=5, n_redundant=2,
+    n_classes=3, weights=[0.6, 0.3, 0.1], flip_y=0.05, random_state=42
+)
+
+# Define the models we want to compare
+models = {
+    "Logistic Regression": LogisticRegression(max_iter=1000),
+    "Random Forest": RandomForestClassifier(n_estimators=50, random_state=42)
+}
+
+# Define our custom cross-validator
+custom_cv = StratifiedKFoldCV(n_splits=10, shuffle=True, random_state=42)
+
+# Loop through each model and get its CV scores
+all_results = {}
+
+for model_name, model in models.items():
+    fold_scores = []
+    for train_indices, test_indices in custom_cv.split(X, y):
+        X_train, X_test = X[train_indices], X[test_indices]
+        y_train, y_test = y[train_indices], y[test_indices]
+
+        model.fit(X_train, y_train)
+        predictions = model.predict(X_test)
+        score = accuracy_score(y_test, predictions)
+        fold_scores.append(score)
+
+    all_results[model_name] = fold_scores
+    print(f"{model_name} - Mean Accuracy: {np.mean(fold_scores):.4f} (+/- {np.std(fold_scores):.4f})")
+
+print("\nGenerating visualization...")
+plot_cv_scores(all_results, title='Stratified CV Performance: Logistic Regression vs. Random Forest')
