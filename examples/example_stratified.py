@@ -1,0 +1,72 @@
+import numpy as np
+from sklearn.datasets import make_classification
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from custom_cv.splitters import StratifiedKFoldCV
+from custom_cv.visualizations import plot_cv_scores
+from custom_cv.stats import paired_ttest_cv
+
+
+
+
+def run_stratified_example():
+    """Demonstrates StratifiedKFoldCV with model comparison, visualization, and stats."""
+    print("--- Running StratifiedKFoldCV Example ---")
+
+    # Create imbalanced data
+    X, y = make_classification(
+        n_samples=500, n_features=20, n_informative=5, n_redundant=2,
+        n_classes=3, weights=[0.6, 0.3, 0.1], flip_y=0.05, random_state=42
+    )
+
+    #  Define models to compare
+    models = {
+        "Logistic Regression": LogisticRegression(max_iter=1000),
+        "Random Forest": RandomForestClassifier(n_estimators=50, random_state=42)
+    }
+
+    # Define our custom cross-validator
+    custom_cv = StratifiedKFoldCV(n_splits=10, shuffle=True, random_state=42)
+
+    # Get scores for each model
+    all_results = {}
+    for model_name, model in models.items():
+        fold_scores = []
+        for train_indices, test_indices in custom_cv.split(X, y):
+            X_train, X_test = X[train_indices], X[test_indices]
+            y_train, y_test = y[train_indices], y[test_indices]
+
+            model.fit(X_train, y_train)
+            predictions = model.predict(X_test)
+            score = accuracy_score(y_test, predictions)
+            fold_scores.append(score)
+
+        all_results[model_name] = fold_scores
+        print(f"{model_name} - Mean Accuracy: {np.mean(fold_scores):.4f} (±{np.std(fold_scores):.4f})")
+
+    # Perform statistical test
+    print("\n--- Statistical Significance Test ---")
+    lr_scores = all_results['Logistic Regression']
+    rf_scores = all_results['Random Forest']
+
+    t_stat, p_value, is_significant = paired_ttest_cv(rf_scores, lr_scores)
+
+    print(f"Comparing Random Forest vs. Logistic Regression:")
+    print(f"  T-statistic: {t_stat:.4f}, P-value: {p_value:.4f}")
+    if is_significant:
+        winner = "Random Forest" if np.mean(rf_scores) > np.mean(lr_scores) else "Logistic Regression"
+        print(f"  Conclusion: The performance of {winner} is significantly better.")
+    else:
+        print("  Conclusion: The difference in performance is not statistically significant.")
+
+    # Visualize the results
+    print("\nGenerating visualization...")
+    plot_cv_scores(all_results, title='Stratified CV Performance')
+
+if __name__ == "__main__":
+    run_stratified_example()
