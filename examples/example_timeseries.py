@@ -7,6 +7,7 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from custom_cv.splitters import TimeSeriesCV
+from custom_cv.visualizations import plot_cv_splits
 
 def run_timeseries_example():
     """Demonstrates the TimeSeriesCV splitter."""
@@ -38,6 +39,10 @@ def run_timeseries_example():
 
     print("\n--- Final Time-Series Results ---")
     print(f"Average Mean Squared Error: {np.mean(fold_scores):.2f}")
+
+    print("\nGenerating and saving split visualization...")
+    save_path = os.path.join(os.path.dirname(__file__), '..', 'plots', 'timeseries_splits.png')
+    plot_cv_splits(ts_cv, X_time, save_path=save_path)
 
 if __name__ == "__main__":
     run_timeseries_example()

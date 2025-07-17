@@ -1,10 +1,10 @@
 import numpy as np
-
 import sys
 import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from custom_cv.splitters import SpatialBlockCV
+from custom_cv.visualizations import plot_cv_splits
 
 def run_spatial_example():
     """Demonstrates the SpatialBlockCV splitter."""
@@ -31,6 +31,10 @@ def run_spatial_example():
 
         print(f"\nFold {fold_num}: Train samples: {len(train_indices)}, Test samples: {len(test_indices)}")
         print(f"  Test points are in x range: [{min_x:.1f}, {max_x:.1f}], y range: [{min_y:.1f}, {max_y:.1f}]")
+
+    print("\nGenerating and saving split visualization...")
+    save_path = os.path.join(os.path.dirname(__file__), '..', 'plots', 'spatial_splits.png')
+    plot_cv_splits(spatial_cv, X=X_spatial, coords=coords, save_path=save_path)
 
 if __name__ == "__main__":
     run_spatial_example()

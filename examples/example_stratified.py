@@ -64,9 +64,9 @@ def run_stratified_example():
     else:
         print("  Conclusion: The difference in performance is not statistically significant.")
 
-    # Visualize the results
-    print("\nGenerating visualization...")
-    plot_cv_scores(all_results, title='Stratified CV Performance')
+    print("\nGenerating and saving visualization...")
+    save_path = os.path.join(os.path.dirname(__file__), '..', 'plots', 'stratified_cv_comparison.png')
+    plot_cv_scores(all_results, title='Stratified CV Performance', save_path=save_path)
 
 if __name__ == "__main__":
     run_stratified_example()
