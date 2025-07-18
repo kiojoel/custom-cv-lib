@@ -5,69 +5,63 @@ import numpy as np
 
 from .splitters import TimeSeriesCV, SpatialBlockCV
 
-def plot_cv_scores(results_dict, title='Cross-Validation Score Comparison', save_path=None):
+def plot_cv_scores(results_dict, title='Cross-Validation Score Comparison'):
     """
     Creates a box plot of cross-validation scores for one or more models.
 
+    This function creates and returns the matplotlib figure and axes for further
+    customization, display, or saving.
+
     Args:
-        results_dict (dict): A dictionary where keys are model names (str)
-                             and values are lists of scores (list of floats).
+        results_dict (dict): A dictionary of model names and score lists.
         title (str): The title for the plot.
-        save_path (str, optional): If provided, saves the plot to this file path
-                                   instead of showing it. Defaults to None.
+
+    Returns:
+        tuple: A tuple containing the matplotlib (figure, axes) objects.
     """
     try:
         results_df = pd.DataFrame(results_dict)
     except ValueError as e:
         print(f"Error creating DataFrame: {e}")
-        print("Please ensure all models were evaluated on the same number of CV folds.")
-        return
+        return None, None
 
-    # Create the plot
-    plt.figure(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    sns.boxplot(data=results_df, palette='viridis')
-    sns.stripplot(data=results_df, jitter=True, color=".3", size=5)
+    sns.boxplot(data=results_df, palette='viridis', ax=ax)
+    sns.stripplot(data=results_df, jitter=True, color=".3", size=5, ax=ax)
 
-    plt.title(title, fontsize=16)
-    plt.ylabel("Score", fontsize=12)
-    plt.xlabel("Model", fontsize=12)
-    plt.xticks(rotation=45, ha='right')
+    ax.set_title(title, fontsize=16)
+    ax.set_ylabel("Score", fontsize=12)
+    ax.set_xlabel("Model", fontsize=12)
+    ax.tick_params(axis='x', rotation=45)
 
-    # Add the mean score text to each boxplot
     for i, model_name in enumerate(results_df.columns):
         mean_score = np.mean(results_df[model_name])
-        plt.text(i, mean_score, f'{mean_score:.3f}',
-                 ha='center', va='bottom', color='white',
-                 bbox=dict(facecolor='black', alpha=0.5, boxstyle='round,pad=0.2'))
+        ax.text(i, mean_score, f'{mean_score:.3f}',
+                ha='center', va='bottom', color='white',
+                bbox=dict(facecolor='black', alpha=0.5, boxstyle='round,pad=0.2'))
 
-    plt.grid(True, which='major', linestyle='--', linewidth='0.5')
-    plt.tight_layout()
+    ax.grid(True, which='major', linestyle='--', linewidth='0.5')
+    fig.tight_layout()
 
-
-    if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        print(f"Plot saved to {save_path}")
-        plt.close()
-    else:
-        plt.show()
+    return fig, ax
 
 
-def plot_cv_splits(cv_splitter, X, y=None, coords=None, save_path=None):
+def plot_cv_splits(cv_splitter, X, y=None, coords=None):
     """
     Visualizes the train/test splits for a given CV strategy.
 
-    This is especially useful for time-series and spatial splits.
+    Returns the matplotlib figure and axes for customization, display, or saving.
 
     Args:
         cv_splitter: An instantiated cross-validator object from your library.
-        X (np.array): The feature data (used for sample indices).
+        X (np.array): The feature data.
         y (np.array): The target data (optional).
         coords (np.array): The spatial coordinates, required for SpatialBlockCV.
-        save_path (str, optional): If provided, saves the plot to this file path
-                                   instead of showing it. Defaults to None.
+
+    Returns:
+        tuple: A tuple containing the matplotlib (figure, axes) objects.
     """
-    # Handle Spatial CV Visualization
     if isinstance(cv_splitter, SpatialBlockCV):
         if coords is None:
             raise ValueError("For SpatialBlockCV, 'coords' must be provided.")
@@ -79,7 +73,7 @@ def plot_cv_splits(cv_splitter, X, y=None, coords=None, save_path=None):
         fig, axes = plt.subplots(n_rows, n_cols, figsize=(n_cols * 4, n_rows * 4), sharex=True, sharey=True)
         axes = axes.flatten()
 
-        splits = list(cv_splitter.split(X, coords=coords))
+        splits = list(cv_splitter.split(X, y=y, coords=coords))
 
         for i, (train_idx, test_idx) in enumerate(splits):
             ax = axes[i]
@@ -99,14 +93,7 @@ def plot_cv_splits(cv_splitter, X, y=None, coords=None, save_path=None):
         fig.legend(handles, labels, loc='upper right')
         plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 
-
-        if save_path:
-            plt.savefig(save_path, dpi=300)
-            print(f"Spatial split plot saved to {save_path}")
-            plt.close()
-        else:
-            plt.show()
-        return
+        return fig, axes
 
     # Handle General (Time-Series like) Visualization
     n_splits = cv_splitter.get_n_splits()
@@ -127,9 +114,4 @@ def plot_cv_splits(cv_splitter, X, y=None, coords=None, save_path=None):
     ax.legend(loc='upper right')
     fig.tight_layout()
 
-    if save_path:
-        plt.savefig(save_path, dpi=300)
-        print(f"Split plot saved to {save_path}")
-        plt.close()
-    else:
-        plt.show()
+    return fig, ax

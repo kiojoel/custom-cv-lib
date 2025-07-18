@@ -1,13 +1,13 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
-
 import sys
 import os
+import matplotlib.pyplot as plt
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from custom_cv.splitters import TimeSeriesCV
-from custom_cv.visualizations import plot_cv_splits
+from custom_cv import TimeSeriesCV, plot_cv_splits
 
 def run_timeseries_example():
     """Demonstrates the TimeSeriesCV splitter."""
@@ -17,10 +17,8 @@ def run_timeseries_example():
     X_time = np.arange(n_samples).reshape(-1, 1)
     y_time = X_time.flatten() * 2 + np.random.randn(n_samples) * 5
 
-   # Define our time-series cross-validator
     ts_cv = TimeSeriesCV(n_splits=5, test_size=3, gap=2)
 
-    # Use the splitter to see the indices and evaluate a model
     print(f"Splitting {n_samples} samples into {ts_cv.get_n_splits()} folds:")
     model = LinearRegression()
     fold_scores = []
@@ -41,8 +39,13 @@ def run_timeseries_example():
     print(f"Average Mean Squared Error: {np.mean(fold_scores):.2f}")
 
     print("\nGenerating and saving split visualization...")
-    save_path = os.path.join(os.path.dirname(__file__), '..', 'plots', 'timeseries_splits.png')
-    plot_cv_splits(ts_cv, X_time, save_path=save_path)
+    fig, ax = plot_cv_splits(ts_cv, X_time)
+
+    if fig:
+        save_path = os.path.join(os.path.dirname(__file__), '..', 'plots', 'timeseries_splits.png')
+        fig.savefig(save_path, dpi=300)
+        print(f"Plot saved to {save_path}")
+        plt.close(fig)
 
 if __name__ == "__main__":
     run_timeseries_example()
