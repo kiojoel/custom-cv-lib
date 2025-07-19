@@ -3,11 +3,8 @@ from sklearn.datasets import make_classification
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
-import sys
 import os
 import matplotlib.pyplot as plt
-
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from custom_cv import (
     StratifiedKFoldCV,
@@ -16,7 +13,6 @@ from custom_cv import (
 )
 
 def run_stratified_example():
-    """Demonstrates StratifiedKFoldCV with model comparison, visualization, and stats."""
     print("--- Running StratifiedKFoldCV Example ---")
 
     X, y = make_classification(
@@ -61,7 +57,10 @@ def run_stratified_example():
     fig, ax = plot_cv_scores(all_results, title='Stratified CV Performance')
 
     if fig:
-        save_path = os.path.join(os.path.dirname(__file__), '..', 'plots', 'stratified_cv_comparison.png')
+        plots_dir = os.path.join(os.path.dirname(__file__), '..', 'plots')
+        os.makedirs(plots_dir, exist_ok=True)
+
+        save_path = os.path.join(plots_dir, 'stratified_cv_comparison.png')
         fig.savefig(save_path, dpi=300, bbox_inches='tight')
         print(f"Plot saved to {save_path}")
         plt.close(fig)

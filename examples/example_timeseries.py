@@ -1,11 +1,9 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
-import sys
 import os
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from custom_cv import TimeSeriesCV, plot_cv_splits
 
