@@ -1,33 +1,25 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-[project]
-name = "custom-cv"
-version = "0.1.0"
-authors = [
-  { name="Joel Akinsanya", email="akinsanyajoel82@gmail.com" },
-]
-description = "A custom cross-validation library for stratified, time-series, and spatial data."
-readme = "README.md"
-requires-python = ">=3.8"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-    "Intended Audience :: Science/Research",
-    "Topic :: Scientific/Engineering :: Artificial Intelligence",
-    "Framework :: Scikit-Learn",
-]
-dependencies = [
-    "numpy",
-    "pandas",
-    "scikit-learn",
-    "scipy",
-    "matplotlib",
-    "seaborn",
-]
+[tool.black]
+line-length = 88
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+  | src/custom_cv.egg-info
+)/
+'''
 
-[project.urls]
-"Homepage" = "https://github.com/kiojoel/custom-cv-lib"
-"Bug Tracker" = "https://github.com/kiojoel/custom-cv-lib/issues"
+[tool.isort]
+profile = "black"
+multi_line_output = 3
