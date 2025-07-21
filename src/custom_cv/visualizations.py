@@ -28,7 +28,7 @@ def plot_cv_scores(results_dict, title='Cross-Validation Score Comparison'):
     fig, ax = plt.subplots(figsize=(10, 6))
 
     sns.boxplot(data=results_df, palette='viridis', ax=ax)
-    sns.stripplot(data=results_df, jitter=True, color=".3", size=5, ax=ax)
+    sns.stripplot(data=results_df, jitter=True, color="0.3", size=5, ax=ax)
 
     ax.set_title(title, fontsize=16)
     ax.set_ylabel("Score", fontsize=12)
