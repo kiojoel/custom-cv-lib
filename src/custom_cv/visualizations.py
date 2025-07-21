@@ -2,8 +2,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import pandas as pd
 import numpy as np
+import warnings
 
 from .splitters import TimeSeriesCV, SpatialBlockCV
+
+# Suppress the specific FutureWarnings from seaborn/pandas
+warnings.filterwarnings("ignore", category=FutureWarning, module="seaborn")
 
 def plot_cv_scores(results_dict, title='Cross-Validation Score Comparison'):
     """
@@ -27,21 +31,26 @@ def plot_cv_scores(results_dict, title='Cross-Validation Score Comparison'):
 
     fig, ax = plt.subplots(figsize=(10, 6))
 
+    # Fixed: Use palette parameter correctly
     sns.boxplot(data=results_df, palette='viridis', ax=ax)
-    sns.stripplot(data=results_df, jitter=True, color="0.3", size=5, ax=ax)
+    # Fixed: Use s parameter instead of size, and ensure proper color specification
+    sns.stripplot(data=results_df, jitter=True, color='0.3', s=5, ax=ax)
 
     ax.set_title(title, fontsize=16)
     ax.set_ylabel("Score", fontsize=12)
     ax.set_xlabel("Model", fontsize=12)
     ax.tick_params(axis='x', rotation=45)
 
+    # Handle potential NaN values properly
     for i, model_name in enumerate(results_df.columns):
-        mean_score = np.mean(results_df[model_name])
-        ax.text(i, mean_score, f'{mean_score:.3f}',
-                ha='center', va='bottom', color='white',
-                bbox=dict(facecolor='black', alpha=0.5, boxstyle='round,pad=0.2'))
+        clean_data = results_df[model_name].dropna()
+        if len(clean_data) > 0:
+            mean_score = np.mean(clean_data)
+            ax.text(i, mean_score, f'{mean_score:.3f}',
+                    ha='center', va='bottom', color='white',
+                    bbox=dict(facecolor='black', alpha=0.5, boxstyle='round,pad=0.2'))
 
-    ax.grid(True, which='major', linestyle='--', linewidth='0.5')
+    ax.grid(True, which='major', linestyle='--', linewidth=0.5)
     fig.tight_layout()
 
     return fig, ax
