@@ -13,7 +13,7 @@ This library is designed to be a simple, intuitive, and powerful tool for data s
 - **Time-Series CV**: Respects the temporal order of data, ensuring models are always tested on "future" data relative to the training set.
 - **Spatial Block CV**: Prevents data leakage from spatial autocorrelation by splitting data into geographic blocks.
 - **Statistical Significance Testing**: Includes a paired t-test to determine if the performance difference between two models is statistically significant.
-- **Rich Visualizations**: Tools to plot and compare model performance across folds, and to visualize how the data is split by each CV strategy.
+- **Visualizations**: Tools to plot and compare model performance across folds, and to visualize how the data is split by each CV strategy.
 
 ## Installation
 
@@ -49,7 +49,6 @@ for fold_num, (train_idx, test_idx) in enumerate(ts_cv.split(X)):
     # ... your model training and evaluation logic would go here ...
 
 # 4. Visualize how the data was split
-print("\nGenerating split visualization...")
 fig, ax = plot_cv_splits(ts_cv, X, y)
 plt.show() # In a script, or it will display automatically in a notebook
 ```
